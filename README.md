@@ -36,8 +36,7 @@ void loop() {   // Se repite infinitamente
   delay(1000);             // Esperar 1 segundo
 }
 ```
-
-<a href="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png>"Luz parpadeante </a>
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png"/>a
 
 
 ### Ej n°4 Led con pulsador
