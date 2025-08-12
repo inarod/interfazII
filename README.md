@@ -37,8 +37,7 @@ void loop() {   // Se repite infinitamente
 }
 ```
 
-<a
-href="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png>Luz parpadeante </a>
+<a href="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png>Luz parpadeante </a>
 
 
 ### Ej n°4 Led con pulsador
