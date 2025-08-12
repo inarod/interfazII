@@ -36,7 +36,7 @@ void loop() {   // Se repite infinitamente
   delay(1000);             // Esperar 1 segundo
 }
 ```
-<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png"/>a
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/blinker.png"/>
 
 
 ### Ej n°4 Led con pulsador
@@ -54,7 +54,7 @@ void loop() {
   }
 }
 ```
-
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/pulsador.png"/> 
 
 
 
@@ -72,7 +72,7 @@ void loop() {
 }
 
 ```
-
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/potenciador.png"/>
 
 
 
@@ -128,3 +128,4 @@ void loop() {
   delay(2000); // 2 segundos
 }
 ```
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/semaforo.png"/>
