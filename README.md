@@ -201,3 +201,51 @@ void loop() {
 }
 ``` 
 
+### ej n°6 elipses en processing
+```
+import processing.serial.*;
+
+Serial myPort;  // Crear objeto de la clase Serial
+static String val;    // Datos recibidos desde el puerto serial
+int sensorVal = 0;
+
+void setup()
+{
+  background(228, 204, 214, 1); 
+  //fullScreen(P3D);
+   size(1080, 720);
+   noStroke();
+  noFill();
+  String portName = "COM3";// Cambia el número (en este caso) para que coincida con el puerto correspondiente conectado a tu Arduino. 
+
+  //myPort = new Serial(this, "/dev/cu.usbmodem1101", 9600);
+  myPort = new Serial(this, Serial.list()[0], 9600);
+
+}
+
+void draw()
+{
+  if ( myPort.available() > 0) {  // Si hay datos disponibles,
+  val = myPort.readStringUntil('\n'); 
+  try {
+   sensorVal = Integer.valueOf(val.trim());
+  }
+  catch(Exception e) {
+  ;
+  }
+  println(sensorVal); // léelos y guárdalos en vals!
+  }  
+ background(228, 204, 214, 1);
+  // Escala el valor de mouseX de 0 a 640 a un rango entre 0 y 175
+  float c = map(sensorVal, 70, width, 0, 800);
+  // Escala el valor de mouseX de 0 a 640 a un rango entre 40 y 300
+  float d = map(sensorVal, c, width, 40,3000);
+  fill(135, c, 88);
+  ellipse(width/230, height/67, 90, d);   
+    fill(c, 170, 179);
+  ellipse(width/d, height/2, d, 80);
+    ellipse(width/2, height/2, 90, d);   
+    fill(241, c, 89);
+  ellipse(width/9, height/2, d, 34);
+}
+ ```
