@@ -200,4 +200,4 @@ void loop() {
  // 2 segundos
 }
 ``` 
-<img src="file:///C:/Users/Alumno/Pictures/Screenshots/fosil.png" />
+
