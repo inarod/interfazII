@@ -250,4 +250,4 @@ void draw()
 }
  ```
 <img src="https://github.com/inarod/interfazII/blob/main/IMG/elipse%201.png"/>
-<img src=
+<img src="https://github.com/inarod/interfazII/blob/main/IMG/elipse%202.png" />
