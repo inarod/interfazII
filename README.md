@@ -249,3 +249,5 @@ void draw()
   ellipse(width/9, height/2, d, 34);
 }
  ```
+<img src="https://github.com/inarod/interfazII/blob/main/IMG/elipse%201.png"/>
+<img src=
