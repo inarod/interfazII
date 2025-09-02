@@ -316,5 +316,5 @@ void loop() {
     delay(200);               // Evitar rebotes
   }
 }
-
+<img src="https://github.com/inarod/interfazII/blob/main/IMG/Captura%20de%20pantalla%202025-09-02%20124703.png"/>
 ```
