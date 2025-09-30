@@ -428,8 +428,7 @@ void loop() {
     delay(500);                         // Espera 0,5 segundos antes de pasar al siguiente
   }
 }
-&
-<img src="https//github.com/inarod/interfazII/blob/main/IMG/impar.png"/>
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/impar.png"/>
 ### ej n°10 Botonera & 4 leds
 ```
 // --- Configuración de botones ---
