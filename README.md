@@ -429,7 +429,7 @@ void loop() {
   }
 }
 ``` 
-<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/impar.png />
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/impar.png"/>
 
 
 ### ej n°10 Botonera & 4 leds
@@ -502,3 +502,4 @@ void loop() {
   delay(10);
 }
 ``` 
+<img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/botonera.png"/>
