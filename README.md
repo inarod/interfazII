@@ -503,3 +503,8 @@ void loop() {
 }
 ``` 
 <img src="https://raw.githubusercontent.com/inarod/interfazII/refs/heads/main/IMG/botonera.png"/>
+
+
+
+#### ej. PRESENTACIÓN
+En este ejercicio  realizare visuales similares a las que realizamos en el ejercicio 
