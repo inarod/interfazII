@@ -508,3 +508,766 @@ void loop() {
 
 #### ej. PRESENTACIÓN
 En este ejercicio  realizare visuales similares a las que realizamos en el ejercicio 
+para esto trabaje adjuntando el codigo de processing del ejercico número 6, enviando este codigo a chat gpt y que me ayudara a modificarlo.
+## primer codigo
+para el primer codigo, le di el siguiente prompt a chat gpt:
+necesito que conviertas este mismo codigo de processing en algo nuevo, cambiando los ellipses en una nueva figura, estrellas de colores que lentamente giren y se desplacen por el espacio, creando visuales psicodelicas. adjunto el codigo a continuacion
+import processing.serial.*; Serial myPort; ArrayList<PVector> circles; void setup() { size(1080, 1080); background(0); // Ajusta el nombre del puerto según tu Arduino println(Serial.list()); //myPort = new Serial(this, "/dev/cu.usbmodem1101", 9600); myPort = new Serial(this, Serial.list()[0], 9600); circles = new ArrayList<PVector>(); } void draw() { //background(0); // Dibujar círculos almacenados fill(random(150), random(30), random(120)); //noStroke(); stroke(random(250), random(250), 230, random(180)); for (PVector c : circles) { ellipse(c.x, c.y, random(100), random(100)); } // Revisar si llega algo de Arduino if (myPort.available() > 0) { String val = myPort.readStringUntil('\n'); if (val != null) { val = trim(val); if (val.equals("1")) { // Cada vez que se aprieta el botón, agregar un círculo en posición aleatoria circles.add(new PVector(random(width), random(height))); } } } }
+
+# resultado de codigo dado por chat gpt
+```
+import processing.serial.*;
+
+Serial myPort;
+ArrayList<Star> stars;
+
+void setup() {
+  size(1080, 1080);
+  background(0);
+  println(Serial.list());
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  stars = new ArrayList<Star>();
+}
+
+void draw() {
+  fill(0, 20);  // Fondo semi-transparente para dejar rastros
+  rect(0, 0, width, height);  // "Limpieza" con transparencia
+
+  // Dibujar y actualizar cada estrella
+  for (Star s : stars) {
+    s.update();
+    s.display();
+  }
+
+  // Leer datos de Arduino
+  if (myPort.available() > 0) {
+    String val = myPort.readStringUntil('\n');
+    if (val != null) {
+      val = trim(val);
+      if (val.equals("1")) {
+        stars.add(new Star());
+      }
+    }
+  }
+}
+
+// ==== Clase Star (estrella animada) ====
+class Star {
+  PVector pos, vel;
+  float angle, rotSpeed;
+  color col;
+  float size;
+
+  Star() {
+    pos = new PVector(random(width), random(height));
+    vel = PVector.random2D().mult(random(0.5, 2));
+    angle = random(TWO_PI);
+    rotSpeed = random(-0.01, 0.01);
+    col = color(random(255), random(255), random(255));
+    size = random(20, 60);
+  }
+
+  void update() {
+    pos.add(vel);
+    angle += rotSpeed;
+
+    // Rebote en bordes
+    if (pos.x < 0 || pos.x > width) vel.x *= -1;
+    if (pos.y < 0 || pos.y > height) vel.y *= -1;
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(angle);
+    noStroke();
+    fill(col, 180);
+    drawStar(0, 0, size * 0.5, size, 5);
+    popMatrix();
+  }
+
+  // Función para dibujar una estrella
+  void drawStar(float x, float y, float radius1, float radius2, int npoints) {
+    float angle = TWO_PI / npoints;
+    float halfAngle = angle / 2.0;
+    beginShape();
+    for (float a = 0; a < TWO_PI; a += angle) {
+      float sx = x + cos(a) * radius2;
+      float sy = y + sin(a) * radius2;
+      vertex(sx, sy);
+      sx = x + cos(a + halfAngle) * radius1;
+      sy = y + sin(a + halfAngle) * radius1;
+      vertex(sx, sy);
+    }
+    endShape(CLOSE);
+  }
+}
+```
+el resultado de este codigo me pareció impresionante, sin embargo habian cosas que ajustar.
+
+## segundo codigo 
+para este codigo, este fue el prompt que le di a chat gpt para que modificara mi trabajo
+"haz que todos los colores de las estrellas correspondan a una gama de rosados, que dentro de las mismas estrellas surgan mas particulas y estrellas, y que ademas estas puedan interactuar evitando el contacto con el mouse"
+
+```
+import processing.serial.*;
+
+Serial myPort;
+ArrayList<Star> stars;
+ArrayList<Particle> particles;
+
+void setup() {
+  size(1080, 1080);
+  background(0);
+  println(Serial.list());
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  stars = new ArrayList<Star>();
+  particles = new ArrayList<Particle>();
+}
+
+void draw() {
+  fill(0, 20);
+  rect(0, 0, width, height);  // Fondo con transparencia para efecto rastro
+
+  // Actualizar y mostrar partículas
+  for (int i = particles.size() - 1; i >= 0; i--) {
+    Particle p = particles.get(i);
+    p.update();
+    p.display();
+    if (p.isDead()) {
+      particles.remove(i);
+    }
+  }
+
+  // Actualizar y mostrar estrellas
+  for (Star s : stars) {
+    s.update();
+    s.display();
+  }
+
+  // Leer datos de Arduino
+  if (myPort.available() > 0) {
+    String val = myPort.readStringUntil('\n');
+    if (val != null) {
+      val = trim(val);
+      if (val.equals("1")) {
+        stars.add(new Star());
+      }
+    }
+  }
+}
+
+// ==== Clase Star ====
+class Star {
+  PVector pos, vel;
+  float angle, rotSpeed;
+  color col;
+  float size;
+  int emitTimer = 0;
+
+  Star() {
+    pos = new PVector(random(width), random(height));
+    vel = PVector.random2D().mult(random(0.5, 1.5));
+    angle = random(TWO_PI);
+    rotSpeed = random(-0.01, 0.01);
+    col = randomPink();
+    size = random(30, 60);
+  }
+
+  void update() {
+    applyMouseRepulsion(pos, vel, 80, 0.5);
+    pos.add(vel);
+    angle += rotSpeed;
+
+    // Rebote
+    if (pos.x < 0 || pos.x > width) vel.x *= -1;
+    if (pos.y < 0 || pos.y > height) vel.y *= -1;
+
+    // Emitir partículas cada ciertos frames
+    emitTimer++;
+    if (emitTimer > 15) {
+      particles.add(new Particle(pos.copy(), col));
+      emitTimer = 0;
+    }
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(angle);
+    noStroke();
+    fill(col, 180);
+    drawStar(0, 0, size * 0.4, size, 5);
+    popMatrix();
+  }
+}
+
+// ==== Clase Particle ====
+class Particle {
+  PVector pos, vel;
+  float lifespan;
+  float angle;
+  float size;
+  color col;
+
+  Particle(PVector origin, color c) {
+    pos = origin.copy();
+    vel = PVector.random2D().mult(random(1, 2));
+    lifespan = 255;
+    angle = random(TWO_PI);
+    size = random(5, 15);
+    col = c;
+  }
+
+  void update() {
+    applyMouseRepulsion(pos, vel, 60, 1.0);
+    pos.add(vel);
+    angle += 0.05;
+    lifespan -= 2;
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(angle);
+    noStroke();
+    fill(col, lifespan);
+    drawStar(0, 0, size * 0.4, size, 5);
+    popMatrix();
+  }
+
+  boolean isDead() {
+    return lifespan <= 0;
+  }
+}
+
+// ==== Dibujar estrella ====
+void drawStar(float x, float y, float radius1, float radius2, int npoints) {
+  float angle = TWO_PI / npoints;
+  float halfAngle = angle / 2.0;
+  beginShape();
+  for (float a = 0; a < TWO_PI; a += angle) {
+    float sx = x + cos(a) * radius2;
+    float sy = y + sin(a) * radius2;
+    vertex(sx, sy);
+    sx = x + cos(a + halfAngle) * radius1;
+    sy = y + sin(a + halfAngle) * radius1;
+    vertex(sx, sy);
+  }
+  endShape(CLOSE);
+}
+
+// ==== Repulsión del mouse ====
+void applyMouseRepulsion(PVector pos, PVector vel, float radius, float strength) {
+  float d = dist(mouseX, mouseY, pos.x, pos.y);
+  if (d < radius && d > 0) {
+    PVector dir = PVector.sub(pos, new PVector(mouseX, mouseY));
+    dir.normalize();
+    dir.mult(strength / d);
+    vel.add(dir);
+    vel.limit(3); // Limitar velocidad
+  }
+}
+
+// ==== Generador de rosados ====
+color randomPink() {
+  float r = random(200, 255);
+  float g = random(20, 100);
+  float b = random(150, 255);
+  return color(r, g, b);
+}
+```
+# notas
+este codigo seguia siendo bueno, pero necesitaba seguir probando con diferentes variables para ver las posibilidades que tenia y transformar esto a la visión que se iba formando en mente. por lo que segui especificando que es lo que buscaba.
+
+## tercer codigo 
+"me gustaria que en vez de estrellas fueran una forma de destellos, y que en vez de el color magenta, los tonos de rosado sean pastel, que el destello sea una forma 3d que se mueva aun mas lento y que gire sobre su eje, que no salga de este mas de 1 a 5 partículas que varien de tamaño por segundo, agregando un aleatorizador a esto, que mientras se mantenga presiónado el boton del pulsador aparezcan las figuras, y que el fondo sea de un color azul marino oscuro."
+a lo que chat gpt me respondio con este codigo:
+
+```
+import processing.serial.*;
+
+Serial myPort;
+ArrayList<Glow> glows;
+ArrayList<Particle> particles;
+
+boolean buttonPressed = false;
+
+void setup() {
+  size(1080, 1080, P3D);
+  background(10, 10, 40);  // Azul marino oscuro
+  println(Serial.list());
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  glows = new ArrayList<Glow>();
+  particles = new ArrayList<Particle>();
+}
+
+void draw() {
+  background(10, 10, 40, 100);  // Azul marino oscuro con transparencia para rastros
+
+  if (buttonPressed) {
+    // Generar nuevas glows lentamente
+    if (frameCount % 30 == 0) {
+      glows.add(new Glow());
+    }
+  }
+
+  // Actualizar y mostrar partículas
+  for (int i = particles.size() - 1; i >= 0; i--) {
+    Particle p = particles.get(i);
+    p.update();
+    p.display();
+    if (p.isDead()) {
+      particles.remove(i);
+    }
+  }
+
+  // Actualizar y mostrar glows
+  for (Glow g : glows) {
+    g.update();
+    g.display();
+  }
+
+  // Leer datos Arduino para botón presionado
+  while (myPort.available() > 0) {
+    String val = myPort.readStringUntil('\n');
+    if (val != null) {
+      val = trim(val);
+      if (val.equals("1")) {
+        buttonPressed = true;
+      } else {
+        buttonPressed = false;
+        glows.clear();
+        particles.clear();
+      }
+    }
+  }
+}
+
+// ==== Clase Glow (destello 3D) ====
+class Glow {
+  PVector pos, vel;
+  float angleX, angleY;
+  float rotSpeedX, rotSpeedY;
+  color col;
+  float size;
+  int emitTimer = 0;
+
+  Glow() {
+    pos = new PVector(random(width), random(height), random(-50, 50));
+    vel = PVector.random3D().mult(0.2);
+    angleX = random(TWO_PI);
+    angleY = random(TWO_PI);
+    rotSpeedX = random(-0.002, 0.002);
+    rotSpeedY = random(-0.002, 0.002);
+    col = randomPastelPink();
+    size = random(50, 100);
+  }
+
+  void update() {
+    applyMouseRepulsion3D(pos, vel, 80, 0.3);
+    pos.add(vel);
+    angleX += rotSpeedX;
+    angleY += rotSpeedY;
+
+    // Mantener dentro del canvas 2D + z limitado
+    pos.x = constrain(pos.x, 0, width);
+    pos.y = constrain(pos.y, 0, height);
+    pos.z = constrain(pos.z, -50, 50);
+
+    // Emitir partículas aleatoriamente entre 1 y 5 por segundo
+    emitTimer++;
+    if (emitTimer >= 60) {  // 60 frames ~1 seg
+      int numToEmit = (int)random(1, 6);
+      for (int i = 0; i < numToEmit; i++) {
+        particles.add(new Particle(pos.copy(), col));
+      }
+      emitTimer = 0;
+    }
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y, pos.z);
+    rotateX(angleX);
+    rotateY(angleY);
+    noStroke();
+    fill(col, 180);
+    drawGlowShape(size);
+    popMatrix();
+  }
+}
+
+// ==== Clase Particle ====
+class Particle {
+  PVector pos, vel;
+  float lifespan;
+  float angle;
+  float size;
+  color col;
+
+  Particle(PVector origin, color c) {
+    pos = origin.copy();
+    vel = PVector.random3D().mult(random(0.2, 1.0));
+    lifespan = 255;
+    angle = random(TWO_PI);
+    size = random(5, 20);
+    col = c;
+  }
+
+  void update() {
+    applyMouseRepulsion3D(pos, vel, 60, 0.5);
+    pos.add(vel);
+    angle += 0.01;
+    lifespan -= 3;
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y, pos.z);
+    rotateZ(angle);
+    noStroke();
+    fill(col, lifespan);
+    drawGlowShape(size * 0.3);
+    popMatrix();
+  }
+
+  boolean isDead() {
+    return lifespan <= 0;
+  }
+}
+
+// ==== Dibujar forma destello 3D ====
+void drawGlowShape(float s) {
+  // Octaedro simple con picos brillantes
+  beginShape(TRIANGLES);
+
+  // 6 vértices básicos octaedro
+  PVector[] vertices = {
+    new PVector(0, s, 0),
+    new PVector(-s, 0, 0),
+    new PVector(0, 0, s),
+
+    new PVector(0, s, 0),
+    new PVector(0, 0, s),
+    new PVector(s, 0, 0),
+
+    new PVector(0, s, 0),
+    new PVector(s, 0, 0),
+    new PVector(0, 0, -s),
+
+    new PVector(0, s, 0),
+    new PVector(0, 0, -s),
+    new PVector(-s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(0, 0, s),
+    new PVector(-s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(s, 0, 0),
+    new PVector(0, 0, s),
+
+    new PVector(0, -s, 0),
+    new PVector(0, 0, -s),
+    new PVector(s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(-s, 0, 0),
+    new PVector(0, 0, -s)
+  };
+
+  for (PVector v : vertices) {
+    vertex(v.x, v.y, v.z);
+  }
+
+  endShape();
+}
+
+// ==== Repulsión mouse 3D ====
+void applyMouseRepulsion3D(PVector pos, PVector vel, float radius, float strength) {
+  PVector mousePos = new PVector(mouseX, mouseY, 0);
+  float d = PVector.dist(mousePos, pos);
+  if (d < radius && d > 0) {
+    PVector dir = PVector.sub(pos, mousePos);
+    dir.normalize();
+    dir.mult(strength / d);
+    vel.add(dir);
+    vel.limit(1.5);
+  }
+}
+
+// ==== Generar color pastel rosa ====
+color randomPastelPink() {
+  float r = random(230, 255);
+  float g = random(180, 200);
+  float b = random(200, 230);
+  return color(r, g, b);
+}
+```
+
+le pedi a chat gpt que editara el codigo para que funcione junto al potenciometro y a la vez le pedi un nuevo codigo de arduino
+
+## NUEVO CODIGO PARA PROCESSING
+```
+import processing.serial.*;
+
+Serial myPort;
+ArrayList<Glow> glows;
+ArrayList<Particle> particles;
+
+boolean buttonPressed = false;
+float sizeFactor = 1.0;  // Factor de escala para tamaños
+
+void setup() {
+  size(1080, 1080, P3D);
+  background(10, 10, 40);  // Azul marino oscuro
+  println(Serial.list());
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  glows = new ArrayList<Glow>();
+  particles = new ArrayList<Particle>();
+}
+
+void draw() {
+  background(10, 10, 40, 100);  // Azul marino oscuro con transparencia para rastros
+
+  if (buttonPressed) {
+    // Generar nuevas glows lentamente
+    if (frameCount % 30 == 0) {
+      glows.add(new Glow());
+    }
+  }
+
+  // Actualizar y mostrar partículas
+  for (int i = particles.size() - 1; i >= 0; i--) {
+    Particle p = particles.get(i);
+    p.update();
+    p.display();
+    if (p.isDead()) {
+      particles.remove(i);
+    }
+  }
+
+  // Actualizar y mostrar glows
+  for (Glow g : glows) {
+    g.update();
+    g.display();
+  }
+
+  // Leer datos Arduino para botón y potenciómetro
+  while (myPort.available() > 0) {
+    String val = myPort.readStringUntil('\n');
+    if (val != null) {
+      val = trim(val);
+      if (val.startsWith("BTN:")) {
+        String btnVal = val.substring(4);
+        buttonPressed = btnVal.equals("1");
+        if (!buttonPressed) {
+          glows.clear();
+          particles.clear();
+        }
+      } else if (val.startsWith("POT:")) {
+        String potValStr = val.substring(4);
+        try {
+          int potVal = Integer.parseInt(potValStr);
+          // Mapear de 0-1023 a 0.5 - 2.0 factor de tamaño
+          sizeFactor = map(potVal, 0, 1023, 0.5, 2.0);
+        } catch (Exception e) {
+          // Ignorar errores de parseo
+        }
+      }
+    }
+  }
+}
+
+// ==== Clase Glow (destello 3D) ====
+class Glow {
+  PVector pos, vel;
+  float angleX, angleY;
+  float rotSpeedX, rotSpeedY;
+  color col;
+  float size;
+  int emitTimer = 0;
+
+  Glow() {
+    pos = new PVector(random(width), random(height), random(-50, 50));
+    vel = PVector.random3D().mult(0.2);
+    angleX = random(TWO_PI);
+    angleY = random(TWO_PI);
+    rotSpeedX = random(-0.002, 0.002);
+    rotSpeedY = random(-0.002, 0.002);
+    col = randomPastelPink();
+    size = random(50, 100);
+  }
+
+  void update() {
+    applyMouseRepulsion3D(pos, vel, 80, 0.3);
+    pos.add(vel);
+    angleX += rotSpeedX;
+    angleY += rotSpeedY;
+
+    // Mantener dentro del canvas 2D + z limitado
+    pos.x = constrain(pos.x, 0, width);
+    pos.y = constrain(pos.y, 0, height);
+    pos.z = constrain(pos.z, -50, 50);
+
+    // Emitir partículas aleatoriamente entre 1 y 5 por segundo
+    emitTimer++;
+    if (emitTimer >= 60) {  // 60 frames ~1 seg
+      int numToEmit = (int)random(1, 6);
+      for (int i = 0; i < numToEmit; i++) {
+        particles.add(new Particle(pos.copy(), col));
+      }
+      emitTimer = 0;
+    }
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y, pos.z);
+    rotateX(angleX);
+    rotateY(angleY);
+    noStroke();
+    fill(col, 180);
+    drawGlowShape(size * sizeFactor);
+    popMatrix();
+  }
+}
+
+// ==== Clase Particle ====
+class Particle {
+  PVector pos, vel;
+  float lifespan;
+  float angle;
+  float size;
+  color col;
+
+  Particle(PVector origin, color c) {
+    pos = origin.copy();
+    vel = PVector.random3D().mult(random(0.2, 1.0));
+    lifespan = 255;
+    angle = random(TWO_PI);
+    size = random(5, 20);
+    col = c;
+  }
+
+  void update() {
+    applyMouseRepulsion3D(pos, vel, 60, 0.5);
+    pos.add(vel);
+    angle += 0.01;
+    lifespan -= 3;
+  }
+
+  void display() {
+    pushMatrix();
+    translate(pos.x, pos.y, pos.z);
+    rotateZ(angle);
+    noStroke();
+    fill(col, lifespan);
+    drawGlowShape(size * 0.3 * sizeFactor);
+    popMatrix();
+  }
+
+  boolean isDead() {
+    return lifespan <= 0;
+  }
+}
+
+// ==== Dibujar forma destello 3D ====
+void drawGlowShape(float s) {
+  // Octaedro simple con picos brillantes
+  beginShape(TRIANGLES);
+
+  // 6 vértices básicos octaedro
+  PVector[] vertices = {
+    new PVector(0, s, 0),
+    new PVector(-s, 0, 0),
+    new PVector(0, 0, s),
+
+    new PVector(0, s, 0),
+    new PVector(0, 0, s),
+    new PVector(s, 0, 0),
+
+    new PVector(0, s, 0),
+    new PVector(s, 0, 0),
+    new PVector(0, 0, -s),
+
+    new PVector(0, s, 0),
+    new PVector(0, 0, -s),
+    new PVector(-s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(0, 0, s),
+    new PVector(-s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(s, 0, 0),
+    new PVector(0, 0, s),
+
+    new PVector(0, -s, 0),
+    new PVector(0, 0, -s),
+    new PVector(s, 0, 0),
+
+    new PVector(0, -s, 0),
+    new PVector(-s, 0, 0),
+    new PVector(0, 0, -s)
+  };
+
+  for (PVector v : vertices) {
+    vertex(v.x, v.y, v.z);
+  }
+
+  endShape();
+}
+
+// ==== Repulsión mouse 3D ====
+void applyMouseRepulsion3D(PVector pos, PVector vel, float radius, float strength) {
+  PVector mousePos = new PVector(mouseX, mouseY, 0);
+  float d = PVector.dist(mousePos, pos);
+  if (d < radius && d > 0) {
+    PVector dir = PVector.sub(pos, mousePos);
+    dir.normalize();
+    dir.mult(strength / d);
+    vel.add(dir);
+    vel.limit(1.5);
+  }
+}
+
+// ==== Generar color pastel rosa ====
+color randomPastelPink() {
+  float r = random(230, 255);
+  float g = random(180, 200);
+  float b = random(200, 230);
+  return color(r, g, b);
+}
+```
+### CODIGO PARA ARDUINO 
+
+```
+// Pines Arduino
+const int buttonPin = 2;      // Pin donde está conectado el botón
+const int potPin = A0;        // Pin analógico donde está conectado el potenciómetro
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(buttonPin, INPUT_PULLUP);  // Asumiendo botón conectado a GND con resistencia pull-up interna
+}
+
+void loop() {
+  // Leer estado botón (invertido porque INPUT_PULLUP)
+  int buttonState = digitalRead(buttonPin);
+  int btnValue = (buttonState == LOW) ? 1 : 0;  // Presionado = 1, no presionado = 0
+
+  // Leer potenciómetro (0-1023)
+  int potValue = analogRead(potPin);
+
+  // Enviar datos por Serial en formato esperado
+  Serial.print("BTN:");
+  Serial.println(btnValue);
+
+  Serial.print("POT:");
+  Serial.println(potValue);
+
+  delay(50);  // Ajustar tasa de envío (20 veces por segundo)
+}
+``` 
